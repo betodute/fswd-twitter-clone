@@ -6,16 +6,43 @@ const AuthForm = () => {
   const [email, setEmail] = useState('');
   const [isLogin, setIsLogin] = useState(true); // Track whether it's a login or signup form
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Perform login or signup logic here based on isLogin state
+    const userData = {
+      user: {
+        username,
+        email,
+        password
+      }
+    };
+
     if (isLogin) {
       // Handle login
       console.log('Logging in with:', username, password);
+      // Add login logic here if needed
     } else {
       // Handle signup
-      console.log('Signing up with:', username, email, password);
+      try {
+        const response = await fetch('/api/users', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(userData),
+        });
+
+        if (!response.ok) {
+          const errorDetails = await response.json();
+          console.error('Failed to sign up:', errorDetails);
+          throw new Error('Failed to sign up');
+        }
+
+        const result = await response.json();
+        console.log('User created successfully:', result); // Logs the User object returned by the server
+      } catch (error) {
+        console.error('Error signing up:', error);
+      }
     }
 
     // Reset form fields if needed
@@ -71,13 +98,15 @@ const AuthForm = () => {
           <a href="#">Forgot password?</a>
         </form>
       </div>
-      <div className="sign-up col-xs-4 col-xs-offset-1">
-        <form>
-          {/* Your signup form content */}
-        </form>
-      </div>
+      <button
+        type="button"
+        onClick={() => setIsLogin(!isLogin)}
+        className="btn btn-link">
+        {isLogin ? 'Need an account? Sign up' : 'Have an account? Log in'}
+      </button>
     </div>
   );
 };
 
 export default AuthForm;
+
